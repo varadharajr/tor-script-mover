@@ -54,7 +54,13 @@ print_status() {
 # Function to print only success/failure messages (for user display)
 print_result() {
     local message="$1"
-    echo -e "${GREEN}[$(date '+%Y-%m-%d %H:%M:%S')] ${message}${NC}"
+    echo -e "${GREEN}✓ ${message}${NC}"
+}
+
+# Function to print failure messages (for user display)
+print_failure() {
+    local message="$1"
+    echo -e "${RED}✗ ${message}${NC}"
 }
 
 print_error() {
@@ -247,7 +253,7 @@ deploy_script() {
     if download_script "$url" "$original_name"; then
         log_message "Download successful: $original_name"
     else
-        print_result "FAILED: Download of $original_name"
+        print_failure "Download of $original_name"
         return 1
     fi
     
@@ -255,7 +261,7 @@ deploy_script() {
     if rename_with_date "$LOCAL_TMP_DIR/$original_name" "$new_name"; then
         log_message "Rename successful: $new_name"
     else
-        print_result "FAILED: Rename of $original_name to $new_name"
+        print_failure "Rename of $original_name to $new_name"
         return 1
     fi
     
@@ -263,7 +269,7 @@ deploy_script() {
     if copy_to_cvm "$LOCAL_TMP_DIR/$new_name"; then
         log_message "CVM copy successful: $new_name"
     else
-        print_result "FAILED: CVM copy of $new_name"
+        print_failure "CVM copy of $new_name"
         return 1
     fi
     
@@ -271,16 +277,16 @@ deploy_script() {
     if set_cvm_permissions "$new_name"; then
         log_message "Permission set successful: $new_name"
     else
-        print_result "FAILED: Permission setting for $new_name"
+        print_failure "Permission setting for $new_name"
         return 1
     fi
     
     # Verify file
     if verify_cvm_file "$new_name"; then
         log_message "Verification successful: $new_name"
-        print_result "SUCCESS: $new_name downloaded successfully"
+        print_result "$new_name downloaded successfully"
     else
-        print_result "FAILED: Verification of $new_name"
+        print_failure "Verification of $new_name"
         return 1
     fi
     
@@ -300,21 +306,26 @@ cleanup() {
 
 # Function to display summary
 display_summary() {
-    print_result "Deployment Summary"
-    print_result "=================="
-    print_result "[OK] Azure ToR Upgrade script deployed: azure-tor-upgrade-$DATE_SUFFIX.sh"
-    print_result "[OK] Rollback script deployed: rollback-$DATE_SUFFIX.sh"
-    print_result ""
-    print_result "Files deployed to CVM:"
-    print_result "  - Location: $CVM_USER@$CVM_IP:$CVM_BIN_DIR/"
-    print_result "  - Permissions: 755"
-    print_result "  - Date suffix: $DATE_SUFFIX"
-    print_result ""
-    print_result "Next Steps:"
-    print_result "   1. SSH to CVM: ssh $CVM_USER@$CVM_IP"
-    print_result "   2. Navigate to bin: cd ~/bin"
-    print_result "   3. List files: ls -la"
-    print_result "   4. Run scripts as needed"
+    echo ""
+    echo -e "${GREEN}═══════════════════════════════════════════════════════════════${NC}"
+    echo -e "${GREEN}                    DEPLOYMENT SUMMARY                        ${NC}"
+    echo -e "${GREEN}═══════════════════════════════════════════════════════════════${NC}"
+    echo ""
+    print_result "Azure ToR Upgrade script deployed: azure-tor-upgrade-$DATE_SUFFIX.sh"
+    print_result "Rollback script deployed: rollback-$DATE_SUFFIX.sh"
+    echo ""
+    echo -e "${BLUE}Files deployed to CVM:${NC}"
+    echo -e "  ${YELLOW}•${NC} Location: $CVM_USER@$CVM_IP:$CVM_BIN_DIR/"
+    echo -e "  ${YELLOW}•${NC} Permissions: 755"
+    echo -e "  ${YELLOW}•${NC} Date suffix: $DATE_SUFFIX"
+    echo ""
+    echo -e "${BLUE}Next Steps:${NC}"
+    echo -e "  ${YELLOW}1.${NC} SSH to CVM: ${GREEN}ssh $CVM_USER@$CVM_IP${NC}"
+    echo -e "  ${YELLOW}2.${NC} Navigate to bin: ${GREEN}cd ~/bin${NC}"
+    echo -e "  ${YELLOW}3.${NC} List files: ${GREEN}ls -la${NC}"
+    echo -e "  ${YELLOW}4.${NC} Run scripts as needed"
+    echo ""
+    echo -e "${GREEN}═══════════════════════════════════════════════════════════════${NC}"
 }
 
 # Function to display usage information
@@ -356,13 +367,13 @@ main() {
     
     # Check dependencies
     if ! check_dependencies; then
-        print_result "FAILED: Dependency check failed"
+        print_failure "Dependency check failed"
         exit 1
     fi
     
     # Create temporary directory
     if ! create_temp_dir; then
-        print_result "FAILED: Could not create temporary directory"
+        print_failure "Could not create temporary directory"
         exit 1
     fi
     
@@ -371,14 +382,14 @@ main() {
     
     # Deploy Azure ToR Upgrade script
     if ! deploy_script "$AZURE_TOR_URL" "azure-tor-upgrade-candidate.sh" "azure-tor-upgrade-$DATE_SUFFIX.sh"; then
-        print_result "FAILED: Azure ToR Upgrade script deployment"
+        print_failure "Azure ToR Upgrade script deployment"
         cleanup
         exit 1
     fi
     
     # Deploy Rollback script
     if ! deploy_script "$ROLLBACK_URL" "rollback.sh" "rollback-$DATE_SUFFIX.sh"; then
-        print_result "FAILED: Rollback script deployment"
+        print_failure "Rollback script deployment"
         cleanup
         exit 1
     fi
