@@ -279,7 +279,7 @@ deploy_script() {
     # Verify file
     if verify_cvm_file "$new_name"; then
         log_message "Verification successful: $new_name"
-        print_result "SUCCESS: $new_name deployed successfully"
+        print_result "SUCCESS: $new_name downloaded successfully"
     else
         print_result "FAILED: Verification of $new_name"
         return 1
@@ -351,7 +351,7 @@ EOF
 
 # Main execution function
 main() {
-    print_result "GitHub Script Downloader and CVM Deployer Started"
+    print_result "ToR Script Mover executed successfully"
     log_message "GitHub Script Downloader and CVM Deployer"
     log_message "========================================="
     
@@ -390,8 +390,13 @@ main() {
     # Clean up
     cleanup
     
-    print_result "SUCCESS: All deployments completed successfully!"
+    print_result "SUCCESS: All scripts downloaded and deployed to CVM successfully!"
     log_message "All deployments completed successfully!"
+    
+    # Connect to CVM
+    print_result "Connecting to CVM..."
+    print_result "SSH command: ssh $CVM_USER@$CVM_IP"
+    ssh "$CVM_USER@$CVM_IP"
 }
 
 # Execute main function
