@@ -18,10 +18,14 @@ This project provides a streamlined workflow for Windows users to log into Nutan
 │   ├── azure-tor-upgrade-candidate.sh # ToR upgrade script
 │   ├── rollback.sh                   # Rollback script
 │   └── new-rackinfo.sh               # Additional utility script
-├── archived-scripts/                  # Archived scripts (ignored by Git)
 ├── config/                           # Configuration templates
+│   └── config.env                    # Environment configuration template
 ├── docs/                             # Documentation
+│   └── GITHUB_SETUP.md               # GitHub setup guide
 ├── examples/                          # Example scripts
+│   ├── azure-tor-upgrade-candidate.sh # Example ToR upgrade script
+│   ├── example-usage.sh              # Usage examples
+│   └── rollback.sh                   # Example rollback script
 └── .gitignore                        # Git ignore rules
 ```
 
