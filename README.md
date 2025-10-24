@@ -10,8 +10,8 @@ This project provides a PowerShell script for Windows users to log into Nutanix 
 
 ```
 nutanix-teleport-automation/
-├── scripts/                    # Main automation script
-│   └── teleport-login-clean.ps1 # PowerShell script for Windows
+├── scripts/                    # GitHub deployment script
+│   └── github-script-deployer.sh # Script to download and deploy GitHub scripts to CVM
 ├── config/                    # Configuration files
 │   └── config.env             # Environment configuration template
 ├── docs/                      # Documentation
@@ -25,10 +25,9 @@ nutanix-teleport-automation/
 
 ## 🚀 Features
 
-- **PowerShell automation**: Streamlined script for Windows users
-- **Automated Teleport authentication**: Uses `tplogin` function for seamless login
-- **Node discovery**: Automatically finds nodes based on rack and cluster names
-- **GitHub integration**: Provides links to download deployment scripts
+- **GitHub script deployment**: Downloads and deploys scripts from GitHub to CVM
+- **Automated file management**: Renames files with date suffixes
+- **CVM integration**: Copies files to Nutanix CVM with proper permissions
 - **Comprehensive error handling**: Detailed error messages and validation
 - **Colored output**: Easy-to-read status messages
 
@@ -68,27 +67,25 @@ nutanix-teleport-automation/
 
 ## 🎯 Usage
 
-### Windows (PowerShell)
+### GitHub Script Deployer
 
-```powershell
-.\scripts\teleport-login-clean.ps1 -RackName <rack_name> -ClusterName <cluster_name>
+The main script downloads and deploys scripts from GitHub to the Nutanix CVM:
+
+```bash
+./scripts/github-script-deployer.sh
 ```
 
-**Examples**:
-```powershell
-.\scripts\teleport-login-clean.ps1 -RackName "rack-01" -ClusterName "cluster-prod"
-.\scripts\teleport-login-clean.ps1 -RackName "rack-02" -ClusterName "cluster-dev"
-```
+**What it does:**
+1. Downloads `azure-tor-upgrade-candidate.sh` from GitHub
+2. Downloads `rollback.sh` from GitHub  
+3. Renames files with current date suffix (e.g., `azure-tor-upgrade-20251024.sh`)
+4. Copies files to CVM at `192.168.5.2:~/bin/`
+5. Sets file permissions to `755`
+6. Verifies deployment
 
-**Check status only**:
-```powershell
-.\scripts\teleport-login-clean.ps1 -Status
-```
-
-**Show available nodes**:
-```powershell
-.\scripts\teleport-login-clean.ps1 -Nodes
-```
+**Files deployed:**
+- `azure-tor-upgrade-YYYYMMDD.sh`
+- `rollback-YYYYMMDD.sh`
 
 ## ⚙️ Configuration
 
@@ -130,31 +127,33 @@ function tplogin { tsh login --proxy=your-teleport-proxy.example.com --user=your
 
 ## 🔄 Workflow
 
-The PowerShell script performs the following steps:
+The GitHub script deployer performs the following steps:
 
-1. **Input Validation**: Validates rack name and cluster name parameters
-2. **Dependency Check**: Ensures all required tools are available
-3. **Teleport Login**: Uses `tplogin` function to authenticate with Teleport
-4. **Node Discovery**: Uses `tsh ls cluster_name=` to find nodes matching the cluster
-5. **Cluster Information**: Displays formatted cluster details
-6. **GitHub Links**: Provides links to download deployment scripts from `varadharajr/tor-script-mover`
-7. **AHV Connection**: Connects to the AHV host using `tsh ssh`
+1. **Dependency Check**: Ensures curl, scp, and ssh are available
+2. **Download Scripts**: Downloads scripts from GitHub repositories
+3. **File Renaming**: Adds current date suffix to filenames
+4. **CVM Connectivity**: Tests connection to CVM at 192.168.5.2
+5. **File Deployment**: Copies files to CVM using SCP
+6. **Permission Setting**: Sets file permissions to 755
+7. **Verification**: Confirms successful deployment
+8. **Cleanup**: Removes temporary files
 
 ## 🧪 Testing
 
-### PowerShell Workflow Testing
+### GitHub Script Deployer Testing
 
-Use the PowerShell script to test the complete workflow:
+Test the script deployment process:
 
-```powershell
-.\scripts\teleport-login-clean.ps1 -RackName "your-rack" -ClusterName "your-cluster"
+```bash
+./scripts/github-script-deployer.sh
 ```
 
 This script demonstrates:
-1. Teleport authentication
-2. Cluster discovery and information display
-3. GitHub script deployment links
-4. AHV host connection
+1. GitHub script downloading
+2. File renaming with date suffixes
+3. CVM deployment
+4. Permission setting
+5. Deployment verification
 
 ## 🐛 Troubleshooting
 

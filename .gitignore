@@ -75,3 +75,6 @@ test-*.log
 # Archived scripts (not needed for PowerShell workflow)
 archived-scripts/
 
+# Local PowerShell script (run locally, not pushed to GitHub)
+scripts/teleport-login-clean.ps1
+
