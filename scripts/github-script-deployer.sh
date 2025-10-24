@@ -390,7 +390,7 @@ main() {
     # Clean up
     cleanup
     
-    print_result "SUCCESS: All scripts downloaded and deployed to CVM successfully!"
+    print_result "Both azure-tor-upgrade and rollback scripts are copied to local CVM at ~/bin, and permissions are set to executable"
     log_message "All deployments completed successfully!"
     
     # Connect to CVM
