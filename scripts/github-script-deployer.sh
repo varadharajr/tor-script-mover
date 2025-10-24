@@ -22,9 +22,9 @@ DATE_SUFFIX=$(date +%Y%m%d)
 LOG_FILE="/tmp/github-script-deployer.log"
 MAX_LOG_SIZE=1048576  # 1MB in bytes
 
-# GitHub URLs (Note: These are placeholder URLs - update with actual working URLs)
-AZURE_TOR_URL="https://raw.githubusercontent.com/varadharajr/tor-script-mover/main/examples/azure-tor-upgrade-candidate.sh"
-ROLLBACK_URL="https://raw.githubusercontent.com/varadharajr/tor-script-mover/main/examples/rollback.sh"
+# GitHub URLs - Updated to use actual scripts from public repository
+AZURE_TOR_URL="https://raw.githubusercontent.com/varadharajr/tor-script-mover/main/scripts/azure-tor-upgrade-candidate.sh"
+ROLLBACK_URL="https://raw.githubusercontent.com/varadharajr/tor-script-mover/main/scripts/rollback.sh"
 
 # Function to manage log file size
 manage_log_size() {
