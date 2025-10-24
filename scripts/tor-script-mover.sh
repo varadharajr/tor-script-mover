@@ -19,7 +19,7 @@ CVM_USER="nutanix"
 CVM_BIN_DIR="~/bin"
 LOCAL_TMP_DIR="/tmp/github-scripts"
 DATE_SUFFIX=$(date +%Y%m%d)
-LOG_FILE="/tmp/github-script-deployer.log"
+LOG_FILE="/tmp/tor-script-mover.log"
 MAX_LOG_SIZE=1048576  # 1MB in bytes
 
 # GitHub URLs - Updated to use actual scripts from public repository
