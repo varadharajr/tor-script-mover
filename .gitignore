@@ -78,3 +78,7 @@ archived-scripts/
 # Local PowerShell script (run locally, not pushed to GitHub)
 scripts/teleport-login-clean.ps1
 
+# Additional scripts (temporarily ignored)
+scripts/setup-tor-script-mover.sh
+scripts/setup.sh
+
