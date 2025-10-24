@@ -1,56 +1,61 @@
-# Nutanix Teleport Automation
+# Teleport ToR Script Mover
 
-A streamlined PowerShell automation script for Nutanix infrastructure access through Teleport with Okta Verify authentication.
+A PowerShell automation tool for accessing Nutanix AHV hosts through Teleport and deploying ToR (Top of Rack) scripts to CVM (Controller Virtual Machine).
 
-## 🎯 Overview
+## Overview
 
-This project provides a PowerShell script for Windows users to log into Nutanix AHV hosts through Teleport. The script handles Teleport authentication, cluster discovery, and provides GitHub links for downloading additional deployment scripts to the CVM.
+This project provides a streamlined workflow for Windows users to log into Nutanix AHV hosts through Teleport with Okta Verify authentication, then deploy ToR upgrade and rollback scripts to the local CVM. The solution consists of two main components:
 
-## 📁 Project Structure
+1. **teleport-login.sh** - PowerShell script for Teleport authentication and cluster discovery
+2. **tor-script-mover.sh** - Bash script for downloading and deploying ToR scripts to CVM
+
+## Project Structure
 
 ```
-nutanix-teleport-automation/
-├── scripts/                    # GitHub deployment script
-│   └── github-script-deployer.sh # Script to download and deploy GitHub scripts to CVM
-├── config/                    # Configuration files
-│   └── config.env             # Environment configuration template
-├── docs/                      # Documentation
-│   ├── README.md              # This file
-│   └── GITHUB_SETUP.md        # GitHub setup guide
-├── examples/                  # Example scripts and usage
-│   └── example-usage.sh       # Usage examples
-├── archived-scripts/          # Archived scripts (ignored by Git)
-└── .gitignore                 # Git ignore rules
+teleport-tor-script-mover/
+├── scripts/                           # Main deployment scripts
+│   ├── teleport-login.sh             # PowerShell script for Teleport login
+│   ├── tor-script-mover.sh           # Bash script for ToR script deployment
+│   ├── azure-tor-upgrade-candidate.sh # ToR upgrade script
+│   ├── rollback.sh                   # Rollback script
+│   └── new-rackinfo.sh               # Additional utility script
+├── archived-scripts/                  # Archived scripts (ignored by Git)
+├── config/                           # Configuration templates
+├── docs/                             # Documentation
+├── examples/                          # Example scripts
+└── .gitignore                        # Git ignore rules
 ```
 
-## 🚀 Features
+## Features
 
-- **GitHub script deployment**: Downloads and deploys scripts from GitHub to CVM
-- **Automated file management**: Renames files with date suffixes
-- **CVM integration**: Copies files to Nutanix CVM with proper permissions
-- **Comprehensive error handling**: Detailed error messages and validation
-- **Colored output**: Easy-to-read status messages
+- **Automated Teleport Authentication**: Handles Okta Verify authentication seamlessly
+- **Cluster Discovery**: Finds and filters Nutanix clusters by name
+- **ToR Script Deployment**: Downloads and deploys ToR upgrade and rollback scripts
+- **Date-based File Management**: Automatically renames files with current date suffix
+- **CVM Integration**: Copies files to Nutanix CVM with proper permissions
+- **Comprehensive Logging**: Detailed logs with automatic size management
+- **Error Handling**: Robust error handling with clear status messages
 
-## 📋 Prerequisites
+## Prerequisites
 
 ### Required Software
 - **Teleport client** (`tsh`) - [Download here](https://goteleport.com/docs/installation/)
 - **SSH client** - OpenSSH or compatible
-- **Git** - For script repository access
+- **PowerShell** - For Windows execution
 - **Okta Verify** - For MFA authentication
 
 ### Required Configuration
 - `tplogin` alias configured for Teleport authentication
 - Access to Teleport server with proper permissions
-- SSH access to target Nutanix nodes
-- Git repository with scripts to deploy
+- SSH access to target Nutanix AHV hosts
+- SSH access to CVM at 192.168.5.2
 
-## 🛠️ Installation
+## Installation
 
 1. **Clone the repository**:
    ```bash
-   git clone https://github.com/your-org/nutanix-teleport-automation.git
-   cd nutanix-teleport-automation
+   git clone https://github.com/varadharajr/tor-script-mover.git
+   cd teleport-tor-script-mover
    ```
 
 2. **Make scripts executable** (Linux/Unix):
@@ -58,60 +63,76 @@ nutanix-teleport-automation/
    chmod +x scripts/*.sh
    ```
 
-3. **Configure the environment**:
-   ```bash
-   cp config/config.env ~/.nutanix-ahv-config
-   # Edit the configuration file with your settings
-   nano ~/.nutanix-ahv-config
-   ```
+## Usage
 
-## 🎯 Usage
+### Step 1: Teleport Login and Cluster Discovery
 
-### GitHub Script Deployer
+Run the PowerShell script to authenticate with Teleport and find your cluster:
 
-The main script downloads and deploys scripts from GitHub to the Nutanix CVM:
+```powershell
+.\scripts\teleport-login.sh
+```
+
+**What it does:**
+1. Checks if already logged into Teleport (uses existing session if available)
+2. Prompts for cluster name to search for
+3. Displays cluster information in a formatted layout
+4. Provides commands to connect to AHV host and deploy scripts
+
+**Example output:**
+```
+[2025-10-24 15:10:18] INFO: Using existing Teleport session
+[2025-10-24 15:10:19] SUCCESS: Found 1 node(s) in cluster 'ZGWC_P_NTX_POD06-XEND_CLUSTER2'
+
+#################################
+# ZGWC_P_NTX_POD06-XEND_CLUSTER2 #
+#################################
+
+Customer name:     statestreet.com
+Cluster UUID:      00061756-7197-3ac9-a2a3-2ff66cbe321b
+AHV host:          Nutanix-Cluster-Node-69E84569848F
+Access expires:    2025-10-23 19:07:22 UTC
+```
+
+### Step 2: Connect to AHV Host
+
+Use the provided SSH command to connect to the AHV host:
 
 ```bash
-./scripts/github-script-deployer.sh
+tsh ssh root@Nutanix-Cluster-Node-69E84569848F
+```
+
+### Step 3: Deploy ToR Scripts
+
+Once connected to the AHV host, run the ToR script mover:
+
+```bash
+curl -sSL https://raw.githubusercontent.com/varadharajr/tor-script-mover/main/scripts/tor-script-mover.sh | bash
 ```
 
 **What it does:**
 1. Downloads `azure-tor-upgrade-candidate.sh` from GitHub
-2. Downloads `rollback.sh` from GitHub  
+2. Downloads `rollback.sh` from GitHub
 3. Renames files with current date suffix (e.g., `azure-tor-upgrade-20251024.sh`)
 4. Copies files to CVM at `192.168.5.2:~/bin/`
-5. Sets file permissions to `755`
+5. Sets file permissions to executable (755)
 6. Verifies deployment
+7. Automatically connects to CVM via SSH
+
+**Example output:**
+```
+[2025-10-24 15:10:18] SUCCESS: ToR Script Mover executed successfully
+[2025-10-24 15:10:19] SUCCESS: azure-tor-upgrade-20251024.sh downloaded successfully
+[2025-10-24 15:10:20] SUCCESS: rollback-20251024.sh downloaded successfully
+[2025-10-24 15:10:21] SUCCESS: Both azure-tor-upgrade and rollback scripts are copied to local CVM at ~/bin, and permissions are set to executable
+[2025-10-24 15:10:22] SUCCESS: Connecting to CVM...
+```
 
 **Files deployed:**
 - `azure-tor-upgrade-YYYYMMDD.sh`
 - `rollback-YYYYMMDD.sh`
 
-## ⚙️ Configuration
-
-### Environment Variables
-
-Create a configuration file `~/.nutanix-ahv-config` with the following variables:
-
-```bash
-# Git Repository Configuration
-SCRIPT_REPO_URL="https://github.com/your-org/nutanix-scripts.git"
-
-# Teleport Configuration
-TELEPORT_PROXY="your-teleport-proxy.example.com"
-TELEPORT_USER="your-username"
-
-# Nutanix Configuration
-CVM_IP="192.168.5.2"
-CVM_USER="nutanix"
-CVM_BIN_DIR="~/bin"
-
-# Optional Settings
-SSH_TIMEOUT="30"
-SSH_RETRY_COUNT="3"
-LOG_LEVEL="INFO"
-LOG_FILE="~/nutanix-ahv-login.log"
-```
+## Configuration
 
 ### tplogin Alias Configuration
 
@@ -125,60 +146,66 @@ alias tplogin='tsh login --proxy=your-teleport-proxy.example.com --user=your-use
 function tplogin { tsh login --proxy=your-teleport-proxy.example.com --user=your-username }
 ```
 
-## 🔄 Workflow
+### CVM Configuration
 
-The GitHub script deployer performs the following steps:
+The scripts are configured to deploy to:
+- **CVM IP**: 192.168.5.2
+- **CVM User**: nutanix
+- **Destination Directory**: ~/bin/
+- **File Permissions**: 755 (executable)
 
-1. **Dependency Check**: Ensures curl, scp, and ssh are available
-2. **Download Scripts**: Downloads scripts from GitHub repositories
-3. **File Renaming**: Adds current date suffix to filenames
-4. **CVM Connectivity**: Tests connection to CVM at 192.168.5.2
-5. **File Deployment**: Copies files to CVM using SCP
-6. **Permission Setting**: Sets file permissions to 755
-7. **Verification**: Confirms successful deployment
-8. **Cleanup**: Removes temporary files
+## Workflow
 
-## 🧪 Testing
+The complete workflow consists of these steps:
 
-### GitHub Script Deployer Testing
+1. **Teleport Authentication**: PowerShell script handles login and cluster discovery
+2. **AHV Connection**: Manual SSH connection to AHV host using provided command
+3. **Script Deployment**: Bash script downloads and deploys ToR scripts to CVM
+4. **CVM Access**: Automatic SSH connection to CVM for immediate script execution
 
-Test the script deployment process:
+## Logging
 
-```bash
-./scripts/github-script-deployer.sh
-```
+The ToR script mover creates detailed logs at `/tmp/github-script-deployer.log` with:
+- Maximum file size of 1MB (automatically trimmed)
+- All operations logged with timestamps
+- User sees only success/failure messages
+- Detailed debugging information available in log file
 
-This script demonstrates:
-1. GitHub script downloading
-2. File renaming with date suffixes
-3. CVM deployment
-4. Permission setting
-5. Deployment verification
-
-## 🐛 Troubleshooting
+## Troubleshooting
 
 ### Common Issues
 
-1. **"tplogin: command not found"**
-   - Ensure the `tplogin` alias is properly configured
-   - Check your shell configuration files (`.bashrc`, `.zshrc`, etc.)
+1. **"Already logged in to Teleport"**
+   - The script automatically uses existing Teleport sessions
+   - No re-authentication prompt required
 
-2. **"Failed to login to Teleport"**
-   - Verify Teleport server connectivity
-   - Check Okta Verify configuration
-   - Ensure proper permissions
+2. **"No nodes found matching cluster"**
+   - Verify cluster name spelling and case sensitivity
+   - Check available clusters with `tsh ls`
+   - Ensure you have access to the target cluster
 
-3. **"No nodes found matching rack/cluster"**
-   - Verify rack and cluster names are correct
-   - Check available nodes with `tsh ls`
-   - Ensure you have access to the target nodes
+3. **"Failed to download script from GitHub"**
+   - Check internet connectivity from AHV host
+   - Verify GitHub repository accessibility
+   - Ensure scripts exist in the repository
 
-4. **"Failed to SSH into AHV host"**
-   - Verify node is online and accessible
-   - Check Teleport permissions for the node
-   - Ensure SSH keys are properly configured
+4. **"Failed to copy file to CVM"**
+   - Verify CVM is accessible at 192.168.5.2
+   - Check SSH key configuration
+   - Ensure proper permissions for CVM access
 
-## 🤝 Contributing
+5. **"Permission denied" errors**
+   - Verify SSH keys are properly configured
+   - Check user permissions on CVM
+   - Ensure ~/bin directory exists and is writable
+
+## Repository Information
+
+- **GitHub Repository**: https://github.com/varadharajr/tor-script-mover
+- **Main Script**: https://raw.githubusercontent.com/varadharajr/tor-script-mover/main/scripts/tor-script-mover.sh
+- **ToR Scripts**: Available in `/scripts/` directory
+
+## Contributing
 
 1. Fork the repository
 2. Create a feature branch (`git checkout -b feature/amazing-feature`)
@@ -186,28 +213,27 @@ This script demonstrates:
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
-## 📄 License
+## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🆘 Support
+## Support
 
 For issues and questions:
 
-1. Check the troubleshooting section
-2. Review error messages and logs
+1. Check the troubleshooting section above
+2. Review error messages and log files
 3. Verify configuration settings
 4. Contact your Teleport/Nutanix administrator
 5. Open an issue in the repository
 
-## 📝 Changelog
+## Changelog
 
 ### Version 1.0.0
-- Initial release
-- Cross-platform support (Bash and PowerShell)
-- Automated Teleport authentication
-- Node discovery and SSH automation
-- Script deployment functionality
-- Comprehensive error handling
-- Manual workflow testing
-
+- Initial release with PowerShell and Bash components
+- Automated Teleport authentication with Okta Verify
+- Cluster discovery and filtering
+- ToR script deployment to CVM
+- Comprehensive logging and error handling
+- Date-based file management
+- Automatic CVM connection after deployment
