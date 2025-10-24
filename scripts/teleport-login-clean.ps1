@@ -290,20 +290,23 @@ function Find-NodesByCluster {
                         Write-Info-Status "Connecting to AHV node: $hostname"
                         Write-Host ""
                         try {
-                            Write-Info-Status "Once connected to AHV node, run these commands to set up CVM access:"
+                            Write-Info-Status "Once connected to AHV node, run these commands to deploy GitHub scripts:"
                             Write-Host ""
-                            Write-Host "# Download and run the CVM setup script:" -ForegroundColor Yellow
-                            Write-Host "curl -sSL https://raw.githubusercontent.com/your-org/nutanix-scripts/main/setup-cvm.sh | bash" -ForegroundColor Green
+                            Write-Host "# Download and run the GitHub script deployer:" -ForegroundColor Yellow
+                            Write-Host "curl -sSL https://raw.githubusercontent.com/varadharajr/tor-script-mover/main/scripts/github-script-deployer.sh | bash" -ForegroundColor Green
                             Write-Host ""
                             Write-Host "# Or download manually and run:" -ForegroundColor Yellow
-                            Write-Host "wget https://raw.githubusercontent.com/your-org/nutanix-scripts/main/setup-cvm.sh" -ForegroundColor Green
-                            Write-Host "chmod +x setup-cvm.sh" -ForegroundColor Green
-                            Write-Host "./setup-cvm.sh" -ForegroundColor Green
+                            Write-Host "wget https://raw.githubusercontent.com/varadharajr/tor-script-mover/main/scripts/github-script-deployer.sh" -ForegroundColor Green
+                            Write-Host "chmod +x github-script-deployer.sh" -ForegroundColor Green
+                            Write-Host "./github-script-deployer.sh" -ForegroundColor Green
                             Write-Host ""
                             Write-Info-Status "This script will:"
-                            Write-Info-Status "1. SSH into the CVM at 192.168.5.2"
-                            Write-Info-Status "2. Download scripts from GitHub repo to ~/tmp/"
-                            Write-Info-Status "3. Set up the Nutanix environment"
+                            Write-Info-Status "1. Download azure-tor-upgrade-candidate.sh from GitHub"
+                            Write-Info-Status "2. Download rollback.sh from GitHub"
+                            Write-Info-Status "3. Rename files with current date suffix"
+                            Write-Info-Status "4. Copy files to CVM at 192.168.5.2:~/bin/"
+                            Write-Info-Status "5. Set file permissions to 755"
+                            Write-Info-Status "6. Verify deployment"
                             Write-Host ""
                             Write-Info-Status "Connecting to AHV node: $hostname"
                             Write-Host ""

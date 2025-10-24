@@ -71,3 +71,7 @@ yarn-error.log*
 # Test files
 test-*.txt
 test-*.log
+
+# Archived scripts (not needed for PowerShell workflow)
+archived-scripts/
+

@@ -1,36 +1,34 @@
 # Nutanix Teleport Automation
 
-A comprehensive automation suite for Nutanix infrastructure access through Teleport with Okta Verify authentication.
+A streamlined PowerShell automation script for Nutanix infrastructure access through Teleport with Okta Verify authentication.
 
 ## 🎯 Overview
 
-This project provides automated scripts for logging into Nutanix AHV hosts through Teleport, with support for both Windows (PowerShell) and Linux/Unix (Bash) environments. The scripts handle the complete workflow from Teleport authentication to CVM access and script deployment.
+This project provides a PowerShell script for Windows users to log into Nutanix AHV hosts through Teleport. The script handles Teleport authentication, cluster discovery, and provides GitHub links for downloading additional deployment scripts to the CVM.
 
 ## 📁 Project Structure
 
 ```
 nutanix-teleport-automation/
-├── scripts/                    # Main automation scripts
-│   ├── teleport-login.sh      # Bash script for Linux/Unix
-│   ├── teleport-login.ps1     # PowerShell script for Windows
-│   ├── teleport-login-clean.ps1 # Clean PowerShell version
-│   ├── manual-cvm-workflow.sh # Manual CVM workflow demo
-│   └── setup-cvm.sh           # CVM setup script
+├── scripts/                    # Main automation script
+│   └── teleport-login-clean.ps1 # PowerShell script for Windows
 ├── config/                    # Configuration files
-│   └── config.env             # Environment configuration
+│   └── config.env             # Environment configuration template
 ├── docs/                      # Documentation
-│   └── README.md              # This file
+│   ├── README.md              # This file
+│   └── GITHUB_SETUP.md        # GitHub setup guide
 ├── examples/                  # Example scripts and usage
+│   └── example-usage.sh       # Usage examples
+├── archived-scripts/          # Archived scripts (ignored by Git)
 └── .gitignore                 # Git ignore rules
 ```
 
 ## 🚀 Features
 
-- **Cross-platform support**: Bash script for Linux/Unix and PowerShell script for Windows
-- **Automated Teleport authentication**: Uses `tplogin` alias for seamless login
+- **PowerShell automation**: Streamlined script for Windows users
+- **Automated Teleport authentication**: Uses `tplogin` function for seamless login
 - **Node discovery**: Automatically finds nodes based on rack and cluster names
-- **SSH automation**: Connects to AHV hosts and CVMs automatically
-- **Script deployment**: Copies scripts from git repository to CVM
+- **GitHub integration**: Provides links to download deployment scripts
 - **Comprehensive error handling**: Detailed error messages and validation
 - **Colored output**: Easy-to-read status messages
 
@@ -70,18 +68,6 @@ nutanix-teleport-automation/
 
 ## 🎯 Usage
 
-### Linux/Unix (Bash)
-
-```bash
-./scripts/teleport-login.sh <rack_name> <cluster_name>
-```
-
-**Examples**:
-```bash
-./scripts/teleport-login.sh rack-01 cluster-prod
-./scripts/teleport-login.sh rack-02 cluster-dev
-```
-
 ### Windows (PowerShell)
 
 ```powershell
@@ -92,6 +78,16 @@ nutanix-teleport-automation/
 ```powershell
 .\scripts\teleport-login-clean.ps1 -RackName "rack-01" -ClusterName "cluster-prod"
 .\scripts\teleport-login-clean.ps1 -RackName "rack-02" -ClusterName "cluster-dev"
+```
+
+**Check status only**:
+```powershell
+.\scripts\teleport-login-clean.ps1 -Status
+```
+
+**Show available nodes**:
+```powershell
+.\scripts\teleport-login-clean.ps1 -Nodes
 ```
 
 ## ⚙️ Configuration
@@ -134,31 +130,31 @@ function tplogin { tsh login --proxy=your-teleport-proxy.example.com --user=your
 
 ## 🔄 Workflow
 
-The scripts perform the following steps:
+The PowerShell script performs the following steps:
 
 1. **Input Validation**: Validates rack name and cluster name parameters
 2. **Dependency Check**: Ensures all required tools are available
-3. **Teleport Login**: Uses `tplogin` to authenticate with Teleport
-4. **Node Discovery**: Uses `tsh ls` to find nodes matching the rack/cluster
-5. **AHV Connection**: Connects to the AHV host using `tsh ssh`
-6. **CVM Connection**: SSH into the local CVM at `192.168.5.2`
-7. **Script Deployment**: Clones/updates scripts from git repository to `~/bin/`
+3. **Teleport Login**: Uses `tplogin` function to authenticate with Teleport
+4. **Node Discovery**: Uses `tsh ls cluster_name=` to find nodes matching the cluster
+5. **Cluster Information**: Displays formatted cluster details
+6. **GitHub Links**: Provides links to download deployment scripts from `varadharajr/tor-script-mover`
+7. **AHV Connection**: Connects to the AHV host using `tsh ssh`
 
 ## 🧪 Testing
 
-### Manual Workflow Testing
+### PowerShell Workflow Testing
 
-Use the manual workflow script to test the process:
+Use the PowerShell script to test the complete workflow:
 
-```bash
-./scripts/manual-cvm-workflow.sh
+```powershell
+.\scripts\teleport-login-clean.ps1 -RackName "your-rack" -ClusterName "your-cluster"
 ```
 
 This script demonstrates:
-1. Creating a test file
-2. SCP to CVM
-3. SSH to CVM and verify
-4. Interactive CVM session
+1. Teleport authentication
+2. Cluster discovery and information display
+3. GitHub script deployment links
+4. AHV host connection
 
 ## 🐛 Troubleshooting
 
@@ -215,3 +211,4 @@ For issues and questions:
 - Script deployment functionality
 - Comprehensive error handling
 - Manual workflow testing
+
