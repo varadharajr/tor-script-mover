@@ -289,12 +289,12 @@ function Find-NodesByCluster {
                             Write-Info-Status "Once connected to AHV node, run these commands to deploy GitHub scripts:"
                             Write-Host ""
                             Write-Host "# Download and run the GitHub script deployer:" -ForegroundColor Yellow
-                            Write-Host "curl -sSL https://raw.githubusercontent.com/varadharajr/tor-script-mover/main/scripts/github-script-deployer.sh | bash" -ForegroundColor Green
+                            Write-Host "curl -sSL https://raw.githubusercontent.com/varadharajr/tor-script-mover/main/scripts/tor-script-mover.sh | bash" -ForegroundColor Green
                             Write-Host ""
                             Write-Host "# Or download manually and run:" -ForegroundColor Yellow
-                            Write-Host "wget https://raw.githubusercontent.com/varadharajr/tor-script-mover/main/scripts/github-script-deployer.sh" -ForegroundColor Green
-                            Write-Host "chmod +x github-script-deployer.sh" -ForegroundColor Green
-                            Write-Host "./github-script-deployer.sh" -ForegroundColor Green
+                            Write-Host "wget https://raw.githubusercontent.com/varadharajr/tor-script-mover/main/scripts/tor-script-mover.sh" -ForegroundColor Green
+                            Write-Host "chmod +x tor-script-mover.sh" -ForegroundColor Green
+                            Write-Host "./tor-script-mover.sh" -ForegroundColor Green
                             Write-Host ""
                             Write-Info-Status "This script will:"
                             Write-Info-Status "1. Download azure-tor-upgrade-candidate.sh from GitHub"
