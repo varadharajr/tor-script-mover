@@ -44,11 +44,10 @@ log_message() {
     manage_log_size
 }
 
-# Function to print colored output
+# Function to print colored output (logs only, no terminal output)
 print_status() {
     local color=$1
-    local message=$2
-    echo -e "${color}[$(date '+%Y-%m-%d %H:%M:%S')] ${message}${NC}"
+    local message="$2"
     log_message "$message"
 }
 
@@ -392,11 +391,6 @@ main() {
     
     print_result "Both azure-tor-upgrade and rollback scripts are copied to local CVM at ~/bin, and permissions are set to executable"
     log_message "All deployments completed successfully!"
-    
-    # Connect to CVM
-    print_result "Connecting to CVM..."
-    print_result "SSH command: ssh $CVM_USER@$CVM_IP"
-    ssh "$CVM_USER@$CVM_IP"
 }
 
 # Execute main function
