@@ -12,7 +12,6 @@ This project provides a streamlined workflow for Windows users to log into Nutan
 ## Project Structure
 
 ```
-teleport-tor-script-mover/
 ├── scripts/                           # Main deployment scripts
 │   ├── teleport-login.sh             # PowerShell script for Teleport login
 │   ├── tor-script-mover.sh           # Bash script for ToR script deployment
