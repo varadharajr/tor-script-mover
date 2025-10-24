@@ -19,16 +19,43 @@ CVM_USER="nutanix"
 CVM_BIN_DIR="~/bin"
 LOCAL_TMP_DIR="/tmp/github-scripts"
 DATE_SUFFIX=$(date +%Y%m%d)
+LOG_FILE="/tmp/github-script-deployer.log"
+MAX_LOG_SIZE=1048576  # 1MB in bytes
 
-# GitHub URLs
-AZURE_TOR_URL="https://raw.githubusercontent.com/anam-2019/Azure-ToR-Upgrade/08729a49981a1d6e6fb321a9c2ba0493c9a97b7d/azure-tor-upgrade-candidate.sh"
-ROLLBACK_URL="https://raw.githubusercontent.com/anam-2019/Azure-ToR-Upgrade/e1287e43e5e195b9e22dafaa3fb54609622a87b6/rollback.sh"
+# GitHub URLs (Note: These are placeholder URLs - update with actual working URLs)
+AZURE_TOR_URL="https://raw.githubusercontent.com/varadharajr/tor-script-mover/main/examples/azure-tor-upgrade-candidate.sh"
+ROLLBACK_URL="https://raw.githubusercontent.com/varadharajr/tor-script-mover/main/examples/rollback.sh"
+
+# Function to manage log file size
+manage_log_size() {
+    if [ -f "$LOG_FILE" ]; then
+        local log_size=$(stat -c%s "$LOG_FILE" 2>/dev/null || echo "0")
+        if [ "$log_size" -gt "$MAX_LOG_SIZE" ]; then
+            # Keep only the last 500KB of the log
+            tail -c 524288 "$LOG_FILE" > "${LOG_FILE}.tmp" && mv "${LOG_FILE}.tmp" "$LOG_FILE"
+        fi
+    fi
+}
+
+# Function to log message to file
+log_message() {
+    local message="$1"
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] $message" >> "$LOG_FILE"
+    manage_log_size
+}
 
 # Function to print colored output
 print_status() {
     local color=$1
     local message=$2
     echo -e "${color}[$(date '+%Y-%m-%d %H:%M:%S')] ${message}${NC}"
+    log_message "$message"
+}
+
+# Function to print only success/failure messages (for user display)
+print_result() {
+    local message="$1"
+    echo -e "${GREEN}[$(date '+%Y-%m-%d %H:%M:%S')] ${message}${NC}"
 }
 
 print_error() {
@@ -214,26 +241,52 @@ deploy_script() {
     local original_name="$2"
     local new_name="$3"
     
-    print_info "Starting deployment for: $original_name"
-    print_info "=========================================="
+    log_message "Starting deployment for: $original_name"
+    log_message "=========================================="
     
     # Download script
-    download_script "$url" "$original_name"
+    if download_script "$url" "$original_name"; then
+        log_message "Download successful: $original_name"
+    else
+        print_result "FAILED: Download of $original_name"
+        return 1
+    fi
     
     # Rename with date
-    rename_with_date "$LOCAL_TMP_DIR/$original_name" "$new_name"
+    if rename_with_date "$LOCAL_TMP_DIR/$original_name" "$new_name"; then
+        log_message "Rename successful: $new_name"
+    else
+        print_result "FAILED: Rename of $original_name to $new_name"
+        return 1
+    fi
     
     # Copy to CVM
-    copy_to_cvm "$LOCAL_TMP_DIR/$new_name"
+    if copy_to_cvm "$LOCAL_TMP_DIR/$new_name"; then
+        log_message "CVM copy successful: $new_name"
+    else
+        print_result "FAILED: CVM copy of $new_name"
+        return 1
+    fi
     
     # Set permissions
-    set_cvm_permissions "$new_name"
+    if set_cvm_permissions "$new_name"; then
+        log_message "Permission set successful: $new_name"
+    else
+        print_result "FAILED: Permission setting for $new_name"
+        return 1
+    fi
     
     # Verify file
-    verify_cvm_file "$new_name"
+    if verify_cvm_file "$new_name"; then
+        log_message "Verification successful: $new_name"
+        print_result "SUCCESS: $new_name deployed successfully"
+    else
+        print_result "FAILED: Verification of $new_name"
+        return 1
+    fi
     
-    print_success "Deployment completed for: $new_name"
-    print_info "=========================================="
+    log_message "Deployment completed for: $new_name"
+    log_message "=========================================="
 }
 
 # Function to clean up temporary files
@@ -248,21 +301,21 @@ cleanup() {
 
 # Function to display summary
 display_summary() {
-    print_info "Deployment Summary"
-    print_info "=================="
-    print_success "✅ Azure ToR Upgrade script deployed: azure-tor-upgrade-$DATE_SUFFIX.sh"
-    print_success "✅ Rollback script deployed: rollback-$DATE_SUFFIX.sh"
-    print_info ""
-    print_info "📁 Files deployed to CVM:"
-    print_info "   • Location: $CVM_USER@$CVM_IP:$CVM_BIN_DIR/"
-    print_info "   • Permissions: 755"
-    print_info "   • Date suffix: $DATE_SUFFIX"
-    print_info ""
-    print_info "🔧 Next Steps:"
-    print_info "   1. SSH to CVM: ssh $CVM_USER@$CVM_IP"
-    print_info "   2. Navigate to bin: cd ~/bin"
-    print_info "   3. List files: ls -la"
-    print_info "   4. Run scripts as needed"
+    print_result "Deployment Summary"
+    print_result "=================="
+    print_result "[OK] Azure ToR Upgrade script deployed: azure-tor-upgrade-$DATE_SUFFIX.sh"
+    print_result "[OK] Rollback script deployed: rollback-$DATE_SUFFIX.sh"
+    print_result ""
+    print_result "Files deployed to CVM:"
+    print_result "  - Location: $CVM_USER@$CVM_IP:$CVM_BIN_DIR/"
+    print_result "  - Permissions: 755"
+    print_result "  - Date suffix: $DATE_SUFFIX"
+    print_result ""
+    print_result "Next Steps:"
+    print_result "   1. SSH to CVM: ssh $CVM_USER@$CVM_IP"
+    print_result "   2. Navigate to bin: cd ~/bin"
+    print_result "   3. List files: ls -la"
+    print_result "   4. Run scripts as needed"
 }
 
 # Function to display usage information
@@ -298,23 +351,38 @@ EOF
 
 # Main execution function
 main() {
-    print_info "GitHub Script Downloader and CVM Deployer"
-    print_info "========================================="
+    print_result "GitHub Script Downloader and CVM Deployer Started"
+    log_message "GitHub Script Downloader and CVM Deployer"
+    log_message "========================================="
     
     # Check dependencies
-    check_dependencies
+    if ! check_dependencies; then
+        print_result "FAILED: Dependency check failed"
+        exit 1
+    fi
     
     # Create temporary directory
-    create_temp_dir
+    if ! create_temp_dir; then
+        print_result "FAILED: Could not create temporary directory"
+        exit 1
+    fi
     
     # Test CVM connectivity
     test_cvm_connectivity
     
     # Deploy Azure ToR Upgrade script
-    deploy_script "$AZURE_TOR_URL" "azure-tor-upgrade-candidate.sh" "azure-tor-upgrade-$DATE_SUFFIX.sh"
+    if ! deploy_script "$AZURE_TOR_URL" "azure-tor-upgrade-candidate.sh" "azure-tor-upgrade-$DATE_SUFFIX.sh"; then
+        print_result "FAILED: Azure ToR Upgrade script deployment"
+        cleanup
+        exit 1
+    fi
     
     # Deploy Rollback script
-    deploy_script "$ROLLBACK_URL" "rollback.sh" "rollback-$DATE_SUFFIX.sh"
+    if ! deploy_script "$ROLLBACK_URL" "rollback.sh" "rollback-$DATE_SUFFIX.sh"; then
+        print_result "FAILED: Rollback script deployment"
+        cleanup
+        exit 1
+    fi
     
     # Display summary
     display_summary
@@ -322,7 +390,8 @@ main() {
     # Clean up
     cleanup
     
-    print_success "All deployments completed successfully!"
+    print_result "SUCCESS: All deployments completed successfully!"
+    log_message "All deployments completed successfully!"
 }
 
 # Execute main function

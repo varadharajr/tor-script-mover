@@ -105,12 +105,8 @@ function Test-TeleportStatus {
             Write-Info-Status "Current Teleport status:"
             $statusOutput | ForEach-Object { Write-Host $_ }
             Write-Warning-Status "Already logged in to Teleport"
-            
-            $reauth = Read-Host "Do you want to re-authenticate? (y/N)"
-            if ($reauth -notmatch '^[Yy]$') {
-                Write-Info-Status "Using existing Teleport session"
-                return $true
-            }
+            Write-Info-Status "Using existing Teleport session"
+            return $true
         }
         else {
             Write-Info-Status "Not currently logged in to Teleport"
