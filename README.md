@@ -6,14 +6,14 @@ A PowerShell automation tool for accessing Nutanix AHV hosts through Teleport an
 
 This project provides a streamlined workflow for Windows users to log into Nutanix AHV hosts through Teleport with Okta Verify authentication, then deploy ToR upgrade and rollback scripts to the local CVM. The solution consists of two main components:
 
-1. **teleport-login.sh** - PowerShell script for Teleport authentication and cluster discovery
+1. **teleport-login.ps1** - PowerShell script for Teleport authentication and cluster discovery
 2. **tor-script-mover.sh** - Bash script for downloading and deploying ToR scripts to CVM
 
 ## Project Structure
 
 ```
 ├── scripts/                           # Main deployment scripts
-│   ├── teleport-login.sh             # PowerShell script for Teleport login
+│   ├── teleport-login.ps1             # PowerShell script for Teleport login
 │   ├── tor-script-mover.sh           # Bash script for ToR script deployment
 │   ├── azure-tor-upgrade-candidate.sh # ToR upgrade script
 │   ├── rollback.sh                   # Rollback script
@@ -73,7 +73,7 @@ This project provides a streamlined workflow for Windows users to log into Nutan
 Run the PowerShell script to authenticate with Teleport and find your cluster:
 
 ```powershell
-.\scripts\teleport-login.sh
+.\scripts\teleport-login.ps1
 ```
 
 **What it does:**
